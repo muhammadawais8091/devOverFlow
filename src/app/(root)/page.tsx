@@ -8,6 +8,7 @@ import QuestionCard from "@/components/card/QuestionCard";
 import { ValidationError } from "@/lib/http-errors";
 import handleError from "@/lib/handlers/error";
 import dbConnect from "@/lib/mongoose";
+import { api } from "@/lib/api";
 
 const questions = [
   {
@@ -64,6 +65,7 @@ const questions = [
 const test = async () => {
   try {
     await dbConnect();
+    return await api.users.getAll();
   } catch (error) {
     console.log(error);
     return handleError(error);

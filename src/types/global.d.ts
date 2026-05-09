@@ -23,21 +23,21 @@ interface Question {
   createdAt: Date;
 }
 
-type ActionReponse<T = null> = {
+type ActionResponse<T = null> = {
   success: boolean;
   data?: T;
-  errors: {
+  error: {
     message: string;
     details: Record<string, string[]>;
   };
   status: number;
 };
 
-type SuccessReponse<T> = ActionReponse<T> & {
+type SuccessReponse<T> = ActionResponse<T> & {
   success: true;
 };
 
-type ErrorReponse<undefined> = ActionReponse<undefined> & {
+type ErrorReponse<undefined> = ActionResponse<undefined> & {
   success: false;
 };
 
