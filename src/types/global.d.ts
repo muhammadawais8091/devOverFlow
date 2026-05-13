@@ -37,9 +37,7 @@ type SuccessReponse<T> = ActionResponse<T> & {
   success: true;
 };
 
-type ErrorReponse<undefined> = ActionResponse<undefined> & {
-  success: false;
-};
+export type ErrorResponse = ActionResponse<undefined> & { success: false };
 
-type APIErrorResponse = NextResponse<ErrorReponse>;
-type APIResponse<T = null> = NextResponse<SuccessReponse<T> | ErrorReponse>;
+export type APIErrorResponse = NextResponse<ErrorResponse>;
+export type APIResponse<T = null> = NextResponse<SuccessResponse<T> | ErrorResponse>;
