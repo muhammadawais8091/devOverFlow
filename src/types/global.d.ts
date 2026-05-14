@@ -37,7 +37,12 @@ type SuccessReponse<T> = ActionResponse<T> & {
   success: true;
 };
 
-export type ErrorResponse = ActionResponse<undefined> & { success: false };
+type ErrorResponse = ActionResponse<undefined> & { success: false };
 
-export type APIErrorResponse = NextResponse<ErrorResponse>;
-export type APIResponse<T = null> = NextResponse<SuccessResponse<T> | ErrorResponse>;
+type APIErrorResponse = NextResponse<ErrorResponse>;
+type APIResponse<T = null> = NextResponse<SuccessResponse<T> | ErrorResponse>;
+
+interface RouteParams {
+  params: Promise<Record<string, string>>;
+  searchParams: Promise<Record<string, string>>;
+}
