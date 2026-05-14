@@ -57,29 +57,15 @@ const questions = [
 //       tags: ["Javascript is not a valid tag"],
 //     });
 //   } catch (error) {
-//     console.log(error);
 //     return handleError(error);
 //   }
 // };
-
-const test = async () => {
-  try {
-    await dbConnect();
-    return await api.users.getAll();
-  } catch (error) {
-    console.log(error);
-    return handleError(error);
-  }
-};
 
 interface SearchParams {
   searchParams: Promise<{ [key: string]: string }>;
 }
 
 const Home = async ({ searchParams }: SearchParams) => {
-  const data = await test();
-  console.log(data);
-
   const { query = "", filter = "" } = await searchParams;
 
   const filteredQuestions = questions.filter((question) => {

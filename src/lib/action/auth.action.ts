@@ -9,13 +9,12 @@ import User from "@/database/user.model";
 import action from "../handlers/action";
 import handleError from "../handlers/error";
 import { ActionResponse, ErrorResponse } from "@/types/global";
-import { signIn } from "next-auth/react";
-import { SignUpSchema } from "../validation";
+import { SignInSchema, SignUpSchema } from "../validation";
+import { NotFoundError } from "../http-errors";
+import { signIn } from "../../../auth";
 
 export async function signUpWithCredentials(params: AuthCredentails): Promise<ActionResponse> {
   const validationResult = await action({ params, schema: SignUpSchema });
-
-  console.log("validation results", validationResult);
 
   if (validationResult instanceof Error) {
     return handleError(validationResult) as ErrorResponse;
@@ -58,19 +57,56 @@ export async function signUpWithCredentials(params: AuthCredentails): Promise<Ac
       { session }
     );
 
-    await session.commitTransaction();
-    return { success: true } as ActionResponse;
+    await session.commitTransaction(); // ✅ commit FIRST
   } catch (error) {
     await session.abortTransaction();
 
     return handleError(error) as ErrorResponse;
   } finally {
     await session.endSession();
+  }
 
-    await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
+  // ✅ signIn AFTER transaction is committed and session is closed
+  try {
+    await signIn("credentials", { email, password, redirect: false });
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
+  }
+
+  return { success: true } as ActionResponse;
+}
+
+export async function signInWithCredentials(
+  params: Pick<AuthCredentails, "email" | "password">
+): Promise<ActionResponse> {
+  const validationResult = await action({ params, schema: SignInSchema });
+
+  if (validationResult instanceof Error) {
+    return handleError(validationResult) as ErrorResponse;
+  }
+
+  const { email, password } = validationResult.params!;
+
+  try {
+    const existingUser = await User.findOne({ email });
+
+    if (!existingUser) throw new NotFoundError("User");
+
+    const existingAccount = await Account.findOne({
+      provider: "credentials",
+      providerAccountId: email,
     });
+
+    if (!existingAccount) throw new NotFoundError("Account");
+
+    const passwordMatch = await bcrypt.compare(password, existingAccount.password);
+
+    if (!passwordMatch) throw new Error("Password does not match");
+
+    await signIn("credentials", { email, password, redirect: false });
+
+    return { success: true } as ActionResponse;
+  } catch (error) {
+    return handleError(error) as ErrorResponse;
   }
 }

@@ -28,7 +28,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             existingAccount.userId.toString()
           )) as ActionResponse<IUserDoc>;
 
-          if (!existingUser) return null;
+          if (!existingUser) {
+            return null;
+          }
 
           const isValidPassword = await bcrypt.compare(password, existingAccount.password!);
 
